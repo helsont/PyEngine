@@ -14,17 +14,18 @@ class Globals(object):
 
 Globals = Globals()
 
-Surface = Surface("Game", 400, 400)
+Surface = Surface("Game", 1200, 700)
 GameLoop = GameLoop(Surface)
 
 character = Body(50, 50, 20, 20)
-character.name = "Michelle"
 
 Surface.giveAppearance(character)
 GameLoop.add(character)
 
-floor = Body(0, Surface.getHeight() - 10, Surface.getWidth(), 10)
+floor = Body(0, Surface.getHeight() - 100, Surface.getWidth(), 10)
+floor.setType('static')
 Surface.giveAppearance(floor)
+GameLoop.add(floor)
 
 enemy = Body(100, 20, 40, 40)
 Surface.giveAppearance(enemy)
@@ -34,10 +35,13 @@ def keyboardListener(win):
   speed = 2
   if win.getKeyPressed('Left') == True:
     character.force += Vec2(-speed, 0)
+
   if win.getKeyPressed('Right') == True:
     character.force += Vec2(speed, 0)
+
   if win.getKeyPressed('Up') == True:
-    character.force += Vec2(0, -speed)
+    character.force.y = -10
+
   if win.getKeyPressed('Down') == True:
     character.force += Vec2(0, speed)
 
@@ -54,7 +58,7 @@ def keyTyped(win):
     character.y = character.appearance.y
 
 def update():
-  while Globals.Added <= 500:
+  if Globals.Added <= 1000:
     Globals.Added += 1
     x = random.randrange(0, Surface.getWidth() - 10)
     y = random.randrange(0, Surface.getHeight() - 10)

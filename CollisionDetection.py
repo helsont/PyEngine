@@ -4,45 +4,55 @@ from Vec2 import Vec2
 import time
 import math
 from Graphics import *
+from SweepAndPrune import SweepAndPrune
+from LinkedList import *
 
 class CollisionDetection(object):
 	def __init__(self, x, y, w, h, *args):
-		self.tree = QuadTree(x, y, w, h, 1)
+		self.tree = QuadTree(x, y, w, h, 1, args[0])
 		self.objects = []
+		self.ll = LinkedList()
+		self.size = 0
 	
 	def addBody(self, b):
 		if not hasattr(b, "appearance"):
 			raise AttributeError("Specify an appearance for each collision body.")
-		self.objects.append(b)
+		self.ll.insert(b)
+		size += 1
+		# self.objects.append(b)
 
 	def getNumBodies(self):
-		return self.objects.__len__()
+		return self.size
 		
 	def updateStep(self, delta):
 		self.tree.clear()
-		insertTime = time.time() * 1000
 		
 		# Add the bodies to the tree
 		idx = 0
 		size = self.objects.__len__()
 
+		Node curr = None
+		while curr != None
 		while idx < size:
 			self.tree.insert(self.objects[idx])
 			idx += 1
 
-		# insertTime = time.time() * 1000 -  insertTime
-		# print "insertTime:" + str(insertTime)
+		self.broadphase1(self.objects)
 
-		# handShakeTime = time.time() * 1000
-		# For each object, get the possible colliding objects
-		for x in self.objects:
+	def broadphase2(self, obj, objects):
+		'''Sweep and prune collision detection'''
+		sweepAndPrune = SweepAndPrune()
+		return sweepAndPrune.getNearest(obj, objects)
+
+	def broadphase1(self, objects):
+		'''QuadTree collision detection'''
+		detectedCollisions = []
+		for x in objects:
+			if x.getType() == 'static':
+				continue
 			possible = self.tree.retrieve(x)
 
 			bodyX = self.getBody(x)
-
-			# if bodyX.name == "Michelle":
-				# self.applyHorizontalFriction(body)
-				# self.applyGravity(bodyX)
 
 			bodyX.x += bodyX.force.x
 			bodyX.y += bodyX.force.y
@@ -50,7 +60,8 @@ class CollisionDetection(object):
 			bodyX.appearance.x += bodyX.force.x
 			bodyX.appearance.y += bodyX.force.y
 
-			self.bounce(bodyX)
+			self.applyGravity(bodyX)
+			self.applyHorizontalFriction(bodyX)
 
 			for y in possible:
 				# Run collision detection algorithm
@@ -58,22 +69,34 @@ class CollisionDetection(object):
 				
 				if bodyY is bodyX:
 					continue
-				if self.narrowphase(bodyX, bodyY):
-					self.correctCollision(bodyX, bodyY)
 
-		# handShakeTime = time.time() * 1000 - handShakeTime 
-		# print "handShakeTime:"+str(handShakeTime)
-	
+				if self.isColliding(bodyX, bodyY):
+					if bodyY.getType() == 'static':
+						# print "Static"
+						self.correctStaticCollision(bodyX, bodyY)
+						pass
+					else :
+						self.correctCollision(bodyX, bodyY)
+				detectedCollisions.append(Pair(bodyX, bodyY))
+
 	def applyGravity(self, body):
 		body.force += Vec2(0, .2)
 
 	def bounce(self, body):
-		if body.name == "Michelle":
-			self.applyHorizontalFriction(body)
 
 		# if body.y + body.h > self.tree.h - 100: 
 		# 	body.force.y = -body.force.y
 
+		if body.x + body.w > self.tree.w:
+			body.force.x = -abs(body.force.x)
+		elif body.x < 0:
+			body.force.x = abs(body.force.x)
+		if body.y + body.h > self.tree.h:
+			body.force.y = -abs(body.force.y)
+		elif body.y < 0:
+			body.force.y = abs(body.force.y)
+		
+	def capSpeed(self, body):
 		# Cap speed
 		maxspeed = 10
 		if body.force.x > maxspeed:
@@ -86,24 +109,15 @@ class CollisionDetection(object):
 			body.force.y = -maxspeed
 
 	def applyHorizontalFriction(self, body):
-		body.force -= body.force * .01
+		body.force.x -= body.force.x * .1
 
-		if body.force.x > -.1 and body.force.x < .1:
-			body.force.x = math.floor(body.force.x)
+		# if body.force.x > -.1 and body.force.x < .1:
+		# 	body.force.x = math.floor(body.force.x)
 
-		if body.force.y > -.1 and body.force.y < .1:
-			body.force.y = math.floor(body.force.y)
-		
-	def midphase(self, bX, bY):
-		length = bX.x - bY.x
-		halfWX = bX.w/2
-		halfWY = bY.x/2
+		# if body.force.y > -.1 and body.force.y < .1:
+		# 	body.force.y = math.floor(body.force.y)
 
-		gap = length - halfWX - halfWY
-		
-		return gap <= 0 
-
-	def narrowphase(self, bX, bY):
+	def isColliding(self, bX, bY):
 		myx1 = bX.x #left
 		myy1 = bX.y #top
 		myx2 = bX.x + bX.w #right
@@ -140,6 +154,27 @@ class CollisionDetection(object):
 			bx.force.y = -diffY/2
 			by.force.y = diffY/2
 
+	def correctStaticCollision(self, bx, static):
+		diffX = 0
+		# if bx.x < static.x: # ok so x is left of y ...
+		# 	diffX = static.x + static.w - bx.x
+
+		# 	bx.force.x = -diffX/2
+		# else:
+		# 	diffX = static.x + static.w - bx.x
+
+		# 	bx.force.x = diffX/2
+
+		diffY = 0
+		if bx.y < static.y:
+			diffY = bx.y + bx.h - static.y
+
+			bx.force.y = -diffY/2
+		else:
+			diffY = static.y + static.h - bx.y
+
+			bx.force.y = -diffY/2
+
 	def getBody(self, obj):
 		if not isinstance(obj, Body):
 			if hasattr(obj, "body"):
@@ -147,3 +182,18 @@ class CollisionDetection(object):
 			else: 
 				raise ValueError("This object does not have a body attached to it.")
 		return obj
+
+class Pair(object):
+	def __init__(self, a, b):
+		self.a = a
+		self.b = b
+
+# insertTime = time.time() * 1000 -  insertTime
+# print "insertTime:" + str(insertTime)
+
+# handShakeTime = time.time() * 1000
+# For each object, get the possible colliding objects
+
+
+# handShakeTime = time.time() * 1000 - handShakeTime 
+# print "handShakeTime:"+str(handShakeTime)

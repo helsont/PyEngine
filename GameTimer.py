@@ -160,10 +160,12 @@ class GameTimer(object):
 
 				banger = time.time() * 1000
 				self.totalFramesSkipped += framesSkipped
-				print("FPS:" + str(self.averageFPS))
+				# print("FPS:" + str(self.averageFPS))
 
+			if self.totalFrames % 20 == 0:
 				s = Statistics.findLargestAverageRun(self.getTimerStats())
-				print self.getTimerName(s[0]) + " longest at " + str(s[1]) + " ms."
+				# print self.getTimerName(s[0]) + " longest at " + str(s[1]) + " ms."
+				print Statistics.getAverages([self.getTimerStats()[3]])[0][1]
 
 class ProcessTimer(object):
 	# The number of stat cycles to store
@@ -188,6 +190,27 @@ class Statistics(object):
 		pass
 
 	@staticmethod
+	def getAverages(vals):
+		runIdx = 0
+		averages = []
+		while runIdx < vals.__len__():
+
+			currAverage = 0
+			valIdx = 0
+
+			while valIdx < vals[runIdx].__len__():
+				if vals[runIdx][valIdx] == None:
+					break
+				currAverage += vals[runIdx][valIdx]
+				valIdx += 1
+			
+			currAverage /= valIdx
+			averages.append([runIdx, currAverage])
+
+			runIdx += 1
+
+		return averages
+	@staticmethod
 	def findLargestAverageRun(vals):
 		'''@param vals Expects a 2D array with the first dimension 
 				representing one run and the second dimension containing 
@@ -206,7 +229,7 @@ class Statistics(object):
 
 			average = 0
 			valIdx = 0
-			
+
 			while valIdx < vals[runIdx].__len__():
 				if vals[runIdx][valIdx] == None:
 					break

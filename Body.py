@@ -9,14 +9,17 @@ class Body(object):
     self.w = w
     self.h = h
     self.force = Vec2(0,0)
-    self.name = ""
+    self.name = "kinematic"
     self.__type = None
 
+  def getType(self):
+    return self.__type
+
   def setType(self, bodyType):
-    if bodyType == "static" or bodyType == "kinematic":
+    if bodyType == "static" or bodyType == "dynamic":
       self.__type = bodyType
       return
-    raise ValueError("Body types must be static or kinematic.")
+    raise ValueError("Body types must be static or dynamic.")
 
   def toString(self):
   	return "Body[x="+str(self.x)+", y="+str(self.y)+", w"+str(self.w)+", h"+str(self.h)+"]"

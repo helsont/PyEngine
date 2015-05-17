@@ -34,7 +34,7 @@ class QuadTree(object):
 
     if not surface == None:
       self.surface = surface
-      self.giveAppearance(surface.window)
+      self.giveAppearance(surface)
       surface.add(self.text)
       surface.add(self.appearance)
   
