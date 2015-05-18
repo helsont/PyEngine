@@ -1,5 +1,3 @@
-from Graphics import Rectangle
-from Graphics import Point
 from Vec2 import Vec2
 
 class Body(object):
@@ -8,13 +6,31 @@ class Body(object):
     self.y = y
     self.w = w
     self.h = h
+
+    self.__points = []
     self.force = Vec2(0,0)
     self.name = "kinematic"
-    self.__type = None
+    self.__type = "kinematic"
 
   def getType(self):
     return self.__type
 
+  def getPoints(self):
+
+    x = self.x
+    y = self.y
+    w = self.w
+    h = self.h
+    p = []
+    # Middle point
+    p.append(Vec2(x + w/2, y + h/2))
+    # Top right, move clockwise
+    p.append(Vec2(x + w , y    ))
+    p.append(Vec2(x + w , y + h))
+    p.append(Vec2(x     , y + h))
+    p.append(Vec2(x     , y    ))
+    return p
+    
   def setType(self, bodyType):
     if bodyType == "static" or bodyType == "dynamic":
       self.__type = bodyType

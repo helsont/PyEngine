@@ -1,6 +1,8 @@
 from Graphics import *
 from Myro import *
+import math
 
+RAD_TO_DEGREES = 57.2957795
 class Surface(object):
 	def __init__(self, name, width, height, layers = 1):
 		self.name = name
@@ -23,11 +25,26 @@ class Surface(object):
 	def giveAppearance(self, body):
 		body.appearance = Rectangle(Point(body.x, body.y), Point(body.x + body.w, body.y + body.h))
 
+	def giveVectorAppearance(self, vector, x, y):
+		magnitude = vector.getMagnitude()
+
+		endX = x + vector.x + magnitude * math.cos(vector.getAngle())
+		endY = y + vector.y + magnitude * math.sin(vector.getAngle())
+
+		a = Arrow((endX, endY), -RAD_TO_DEGREES * vector.getAngle())
+		
+		vector.composite = [None] * 2
+		vector.composite[0] = a
+		vector.composite[1] = Line(Point(x,y), Point(endX, endY))
+	
 	def add(self, obj):
-		if not hasattr(obj, "appearance"):
-			obj.draw(self.window)
-		else:
+		if hasattr(obj, "appearance"):
 			obj.appearance.draw(self.window)
+		elif hasattr(obj, "composite"):
+			for i in obj.composite:
+				i.draw(self.window)
+		else:
+			obj.draw(self.window)
 		# self.layers[-1].add(obj)
 	
 	def remove(self, obj):
