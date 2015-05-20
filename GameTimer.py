@@ -2,7 +2,7 @@ import time
 import sys
 
 class GameTimer(object):
-	DEFAULT_FPS = 1
+	DEFAULT_FPS = 60
 	def __init__(self, surface, processes = None, doNotTime = False):
 		'''
 		@param processes The objects to update. Each process must 
@@ -165,9 +165,8 @@ class GameTimer(object):
 			if self.totalFrames % 20 == 0:
 				s = Statistics.findLargestAverageRun(self.getTimerStats())
 				# print self.getTimerName(s[0]) + " longest at " + str(s[1]) + " ms."
-				print Statistics.getAverages([self.getTimerStats()[3]])[0][1]
-			self.running = False
-
+				# print Statistics.getAverages([self.getTimerStats()[3]])[0][1]
+			#self.running = False
 class ProcessTimer(object):
 	# The number of stat cycles to store
 	STAT_SIZE = 100

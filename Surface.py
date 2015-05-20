@@ -3,6 +3,8 @@ from Myro import *
 import math
 
 RAD_TO_DEGREES = 57.2957795
+BOX_ARROW_INDEX = 0
+BOX_LINE_INDEX = 1
 class Surface(object):
 	def __init__(self, name, width, height, layers = 1):
 		self.name = name
@@ -12,7 +14,8 @@ class Surface(object):
 		self.window.mode = 'manual'
 		self.numLayers = layers
 		self.layers = [None] * layers
-		
+		self.temporary = []
+
 		if hasattr(layers, "len"):
 			self.layers = layers
 		else:
@@ -25,27 +28,50 @@ class Surface(object):
 	def giveAppearance(self, body):
 		body.appearance = Rectangle(Point(body.x, body.y), Point(body.x + body.w, body.y + body.h))
 
-	def giveVectorAppearance(self, vector, x, y):
+	def giveVectorAppearance(self, box, vector, x, y, num):
 		magnitude = vector.getMagnitude()
 
 		endX = x + vector.x + magnitude * math.cos(vector.getAngle())
 		endY = y + vector.y + magnitude * math.sin(vector.getAngle())
 
-		a = Arrow((endX, endY), -RAD_TO_DEGREES * vector.getAngle())
-		
-		vector.composite = [None] * 2
-		vector.composite[0] = a
-		vector.composite[1] = Line(Point(x,y), Point(endX, endY))
-	
+		degrees = -RAD_TO_DEGREES * vector.getAngle()
+		a = Arrow((endX, endY), degrees)
+
+		if hasattr(box, "composite") and not box.composite[num] == None:
+			# Update if the vector has an apperance (a.k.a "composite" because
+			# the apperance is a grouping of two figures)
+			# Update the arrow position
+			arrow = box.composite[num][BOX_ARROW_INDEX]
+			arrow.moveTo(endX, endY)
+			
+			# Update the line position
+			line = box.composite[num][BOX_LINE_INDEX]
+			line.setX(endX - vector.x)
+			line.setY(endY - vector.y)
+		else:
+			if not hasattr(box, "composite") :
+				# If a composite hasn't been created, create a new one.
+				box.composite = [None]*4
+
+			# Otherwise, create the individual shape for the composite.
+			box.composite[num] = [a, Line(Point(x,y), Point(endX, endY))]
+
+			# Add it to the surface to be added
+			self.addComposite(box.composite)
+
+	def addComposite(self, obj):
+		for x in obj:
+			if hasattr(x, "__len__"):
+				self.addComposite(x)
+			else:
+				if not x == None:
+					self.add(x)
+
 	def add(self, obj):
 		if hasattr(obj, "appearance"):
 			obj.appearance.draw(self.window)
-		elif hasattr(obj, "composite"):
-			for i in obj.composite:
-				i.draw(self.window)
 		else:
 			obj.draw(self.window)
-		# self.layers[-1].add(obj)
 	
 	def remove(self, obj):
 		pass
@@ -64,13 +90,7 @@ class Surface(object):
 
 	def update(self):
 		self.window.update()
-		# Line((0, 0), (100, 100)).draw(self.window)
-		# self.clear()
-		# for x in self.layers:
-		# x.paint()
-		# 
-		# 
-		pass
+
 class Layer(object):
 	def __init__(self, x, y, width, height, surface):
 		self.objects = []

@@ -4,6 +4,7 @@ from MouseInput import MouseInput
 from Surface import Surface
 from CollisionDetection import CollisionDetection
 from GameTimer import GameTimer
+from PhysicsEngine import PhysicsEngine
 
 class GameLoop(object):
 	def __init__(self, surface, gameUpdate = lambda : None):
@@ -14,7 +15,7 @@ class GameLoop(object):
 		# The game components
 		self.surface = surface
 		self.gameUpdate = gameUpdate
-		self.physics = CollisionDetection(0, 0, surface.getWidth(), surface.getHeight(), self.surface) 
+		self.physics = PhysicsEngine(self.surface)
 		
 		self.gameTimer = GameTimer(surface,[self.keyboardInput.update, self.mouseInput.update, self.gameUpdate, self.physics])
 

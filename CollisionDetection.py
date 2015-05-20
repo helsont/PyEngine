@@ -1,11 +1,11 @@
 from QuadTree import QuadTree 
 from Body import Body
 from Vec2 import Vec2
+from Pair import Pair
 import time
 import math
 import VecMath
 from Graphics import *
-from SweepAndPrune import SweepAndPrune
 
 class CollisionDetection(object):
 	def __init__(self, x, y, w, h, *args):
@@ -33,6 +33,7 @@ class CollisionDetection(object):
 			idx += 1
 
 		self.broadphase1(self.objects)
+		self.tree.updateAppearance()
 
 	def broadphase2(self, obj, objects):
 		'''Sweep and prune collision detection'''
@@ -66,7 +67,7 @@ class CollisionDetection(object):
 					continue
 
 				if self.isColliding(bodyX, bodyY):
-					print bodyX.toString() + " is colliding with " + bodyY.toString()
+					# print bodyX.toString() + " is colliding with " + bodyY.toString()
 					# if bodyY.getType() == 'static':
 						#self.correctStaticCollision(bodyX, bodyY)
 					# else :
@@ -170,8 +171,3 @@ class CollisionDetection(object):
 			else: 
 				raise ValueError("This object does not have a body attached to it.")
 		return obj
-
-class Pair(object):
-	def __init__(self, a, b):
-		self.a = a
-		self.b = b

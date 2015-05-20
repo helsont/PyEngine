@@ -9,6 +9,7 @@ INIT_DEPTH = 100
 MAX_DEPTH = 10
 
 class QuadTree(object):
+  '''QuadTree that holds objects in the leaves.'''
 
   def __init__(self, x, y, width, height, depth, surface = None):
     # Spatial partioning
@@ -28,7 +29,7 @@ class QuadTree(object):
     self.subNodes = [None] * MAX_SUBNODES
     self.depth = depth
 
-    # Don't draw the gui help
+    # Default is to not draw the gui help
     self.hasAppearance = False
     self.surface = None
 
@@ -63,7 +64,11 @@ class QuadTree(object):
       return
     if self.subNodes[0] is None:
       self.surface.remove(self.text)
-      self.text = Text((self.x + 10, self.y + 10), str(self.objects.__len__()))
+      # self.text = Text((self.x + 10, self.y + 10), str(self.objects.__len__()))
+      dir(self.text)
+      self.text.x = self.x + 10
+      self.text.y = self.y + 10
+      # self.text. str(self.objects.__len__()))
       self.surface.add(self.text)
     else:
       for x in self.subNodes:

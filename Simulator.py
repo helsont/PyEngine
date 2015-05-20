@@ -25,7 +25,7 @@ GameLoop.add(character)
 floor = Body(0, Surface.getHeight() - 100, Surface.getWidth(), 10)
 floor.setType('static')
 Surface.giveAppearance(floor)
-# GameLoop.add(floor)
+GameLoop.add(floor)
 
 enemy = Body(100, 20, 40, 40)
 Surface.giveAppearance(enemy)

@@ -9,14 +9,16 @@ class Body(object):
 
     self.__points = []
     self.force = Vec2(0,0)
-    self.name = "kinematic"
     self.__type = "kinematic"
+    self.transform = None
+    self.massData = None
+    self.velocity = None
+    
 
   def getType(self):
     return self.__type
 
   def getPoints(self):
-
     x = self.x
     y = self.y
     w = self.w
