@@ -35,10 +35,10 @@ class CollisionDetection(object):
 		self.broadphase1(self.objects)
 		self.tree.updateAppearance()
 
-	def broadphase2(self, obj, objects):
-		'''Sweep and prune collision detection'''
-		sweepAndPrune = SweepAndPrune()
-		return sweepAndPrune.getNearest(obj, objects)
+	# def broadphase2(self, obj, objects):
+	# 	'''Sweep and prune collision detection'''
+	# 	sweepAndPrune = SweepAndPrune()
+	# 	return sweepAndPrune.getNearest(obj, objects)
 
 	def broadphase1(self, objects):
 		'''QuadTree collision detection'''
@@ -47,7 +47,7 @@ class CollisionDetection(object):
 			if x.getType() == 'static':
 				continue
 			possible = self.tree.retrieve(x)
-
+			print(possible.__len__())
 			bodyX = self.getBody(x)
 
 			bodyX.x += bodyX.force.x
@@ -64,15 +64,11 @@ class CollisionDetection(object):
 				bodyY = self.getBody(y)
 				
 				if bodyY is bodyX:
+					# Skip itself
 					continue
 
 				if self.isColliding(bodyX, bodyY):
-					# print bodyX.toString() + " is colliding with " + bodyY.toString()
-					# if bodyY.getType() == 'static':
-						#self.correctStaticCollision(bodyX, bodyY)
-					# else :
-						# self.correctCollision(bodyX, bodyY)
-				detectedCollisions.append(Pair(bodyX, bodyY))
+					detectedCollisions.append(Pair(bodyX, bodyY))
 			return detectedCollisions
 
 	def applyGravity(self, body):

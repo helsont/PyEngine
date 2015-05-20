@@ -13,7 +13,6 @@ class Body(object):
     self.transform = None
     self.massData = None
     self.velocity = None
-    
 
   def getType(self):
     return self.__type

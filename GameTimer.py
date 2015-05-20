@@ -57,10 +57,22 @@ class GameTimer(object):
 				# Give it a default name
 				timerName = "anonymousClass_" + str(anonClass)
 				anonClass += 1
+			print(timerName)
 			self.timers.append(ProcessTimer(timerName))
 
 	def setPause(self, val):
 		self.paused = val
+
+	def getStatsForName(self, name):
+		'''Returns the stats for the given class name. 
+		Returns an empty array if no process by that name
+		was specified.'''
+
+		for x in self.timers:
+			if x.name == x:
+				# copy of the stats
+				return x.stat[:]
+		return []
 
 	def cycleProcessesWithProfile(self):
 		if not self.processes == None:
@@ -69,7 +81,15 @@ class GameTimer(object):
 
 			while idx < size:
 				
-				if hasattr(self.processes[idx], "__call__"):
+				if self.processes[idx].__name__ == "updateStep" or hasattr(self.processes[idx], "updateStep"):
+					# If it's a function
+					self.timers[idx].start()
+					if self.processes[idx].__name__ == "updateStep":
+						self.processes[idx](self.prevFrameTime)
+					else:
+						self.processes[idx].updateStep(self.prevFrameTime)
+					self.timers[idx].stop()
+				elif hasattr(self.processes[idx], "__call__"):
 					# If it's a function
 					self.timers[idx].start()
 					self.processes[idx]()
@@ -79,11 +99,7 @@ class GameTimer(object):
 					self.timers[idx].start()
 					self.processes[idx].update()
 					self.timers[idx].stop()
-				elif hasattr(self.processes[idx], "updateStep"):
-					# If it's a function
-					self.timers[idx].start()
-					self.processes[idx].updateStep(self.prevFrameTime)
-					self.timers[idx].stop()
+				
 				idx += 1
 
 	def cycleProcesses(self):
@@ -115,6 +131,22 @@ class GameTimer(object):
 
 	def getTimerName(self, idx):
 		return self.timers[idx].name
+
+	def getPrettyStats(self):
+		if self.timeProcesses == False:
+			raise ValueError('Cannot obtain timer ' +
+				'stats when attribute doNotTime is False')
+		res = []
+		idx = 0
+		stringBuilder = ""
+		while idx < self.timers.__len__():
+			avg = Statistics.getAverage(self.timers[idx].stats)
+			res.append([self.timers[idx].name, avg])
+			stringBuilder += self.timers[idx].name
+			stringBuilder += " = " + str(avg) + "\n"
+			idx+=1
+
+		return stringBuilder
 
 	def run(self):
 		beginTime = 0
@@ -163,7 +195,9 @@ class GameTimer(object):
 				# print("FPS:" + str(self.averageFPS))
 
 			if self.totalFrames % 20 == 0:
+				# print(self.getPrettyStats())
 				s = Statistics.findLargestAverageRun(self.getTimerStats())
+
 				# print self.getTimerName(s[0]) + " longest at " + str(s[1]) + " ms."
 				# print Statistics.getAverages([self.getTimerStats()[3]])[0][1]
 			#self.running = False
@@ -185,14 +219,21 @@ class ProcessTimer(object):
 		self.stats[self.currIdx % self.statSize] = time.time() * 1000 - self.startTime
 		self.currIdx += 1
 
+	def getPretty():
+		return [self.name, self.stats]
+
 class Statistics(object):
 	def __init__(self):
 		pass
+
 
 	@staticmethod
 	def getAverages(vals):
 		runIdx = 0
 		averages = []
+		if not hasattr(vals, "__len__"):
+			raise ValueError("must be 2d array")
+
 		while runIdx < vals.__len__():
 
 			currAverage = 0
@@ -210,6 +251,24 @@ class Statistics(object):
 			runIdx += 1
 
 		return averages
+
+	@staticmethod
+	def getAverage(vals):
+		runIdx = 0
+		averages = []
+
+		valIdx = 0
+		currAverage = 0
+
+		while valIdx < vals.__len__():
+			if vals[valIdx] == None:
+				break
+			currAverage += vals[valIdx]
+			valIdx += 1
+		
+		currAverage /= valIdx
+
+		return currAverage
 	@staticmethod
 	def findLargestAverageRun(vals):
 		'''@param vals Expects a 2D array with the first dimension 

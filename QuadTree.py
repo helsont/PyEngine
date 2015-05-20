@@ -1,7 +1,6 @@
 from Graphics import *
 from Vec2 import Vec2
 from Body import Body
-import pdb
 
 MAX_SUBNODES = 4
 MAX_OBJECTS = 10
@@ -54,27 +53,28 @@ class QuadTree(object):
     self.appearance.fill = Color("white")
     self.appearance.fill.alpha = 0
 
-    self.text = Text((self.x, self.y), "")
+    self.text = Text((self.x + 10, self.y + 10), "")
     self.text.color = Color("black")
-
+    
     self.hasAppearance = True
 
   def updateAppearance(self):
+    '''Redraws the text counter if necessary.'''
+
     if self.hasAppearance == False:
       return
-    if self.subNodes[0] is None:
-      self.surface.remove(self.text)
-      # self.text = Text((self.x + 10, self.y + 10), str(self.objects.__len__()))
-      dir(self.text)
-      self.text.x = self.x + 10
-      self.text.y = self.y + 10
-      # self.text. str(self.objects.__len__()))
-      self.surface.add(self.text)
+    # Only update the text for leaves (the only nodes that have text)
+    if self.subNodes[0] is None and not self.text == None and not self.text.getText() == str(self.size()):
+        self.text.setText(str(self.size()))
     else:
-      for x in self.subNodes:
-        x.updateAppearance()
+      # Update subnodes
+      if not self.subNodes[0] == None:
+        for x in self.subNodes:
+          x.updateAppearance()
 
   def getBody(self, obj):
+    '''Gets the body attribute from the object specified.'''
+
     if not isinstance(obj, Body):
       if hasattr(obj, "body"):
         return obj.body
@@ -83,6 +83,7 @@ class QuadTree(object):
     return obj
   
   def insert(self, obj):
+    '''Inserts the object into the QuadTree.'''
     body = self.getBody(obj)
     return self.insertBody(obj, body.x, body.y, body.w, body.h)
   
@@ -111,6 +112,8 @@ class QuadTree(object):
     return self.depth
   
   def clear(self):
+    '''Clears this node from elements and subnodes.'''
+
     for x in self.subNodes:
       if x != None:
         x.clear()
@@ -118,9 +121,20 @@ class QuadTree(object):
     self.objects = []
         
   def isEmpty(self):
-    return self.objects.__len__() == 0
+    '''Returns True if it has no elements.'''
+    return self.size() == 0
   
+  def removeText(self):
+    '''Removes the text (element counter) from the screen.'''
+
+    if self.text:
+      self.text.undraw()
+      self.surface.remove(self.text)
+      self.text = None
+
   def getIndices(self, body):
+    '''Gets the nodes that the body is contained by.'''
+
     indices = [False] * 4
     if body.x + body.w < self.x or body.x > self.maxX:
       return -1
@@ -180,27 +194,27 @@ class QuadTree(object):
         indices[1] = True
 
     res = []
+    
     x = 0
     while x < 4:
       if indices[x] == True:
         res.append(x)
       x += 1
-    # if body.name == "Bobby":
-    #   print "Bobby"+str(res)
+
     return res
       
   def split(self):
+    '''Splits the node into four subnodes.'''
+
     if self.depth + 1 >= MAX_DEPTH:
-      print "Error:"
-      print self.toString()
-      for x in self.objects:
-        print x.toString()
       raise ValueError("Max depth of QuadTree reached")
 
     if self.hasAppearance:
-      self.surface.remove(self.text)
+      self.removeText()
+
     subWidth  = self.w/2
     subHeight = self.h/2
+
     # 0 = bottom right
     # 1 = bottom left
     # 2 = top right
@@ -211,7 +225,8 @@ class QuadTree(object):
     self.subNodes[3] = QuadTree(self.x, self.y, subWidth, subHeight, self.depth+1, self.surface)
 
   def partition(self):
-    # Attempt to add the existing nodes to the new QuadTree
+    '''Attempts to add the existing nodes to subnodes of the four new quadtrees.'''
+
     i = self.objects.__len__() - 1
 
     while i >= 0:
@@ -225,19 +240,22 @@ class QuadTree(object):
       if idx != -1:
         for x in idx:
           self.subNodes[x].insertBody(obj, body.x, body.y, body.w, body.h)
-      else:
-        pass
-        # print "Error" + body.toString()
-        # Doesn't fit in any subnodes
       i-= 1
   
   def toString(self):
+    '''String representation of the QuadTree.'''
+
     return "QuadTree[x="+str(self.x)+", y="+str(self.y)+", w="+str(self.w)+", h="+str(self.h)+"]"
 
   def size(self):
+    '''The number of elements in the QuadTree.'''
+
     return self.objects.__len__()
 
   def retrieve(self, obj):
+    '''Retrieves the possible collisions which is the other objects that share the node
+    with the specified object.'''
+
     # Find out where this object is located
     idx = self.getIndices(obj)
 

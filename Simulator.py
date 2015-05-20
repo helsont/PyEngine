@@ -61,7 +61,7 @@ def update():
   if Globals.Added <= 1000:
     Globals.Added += 1
     x = random.randrange(0, Surface.getWidth() - 10)
-    y = random.randrange(0, 100)#Surface.getHeight() - 10)
+    y = random.randrange(0, Surface.getHeight() - 10)
 
     dx = random.randrange(-5, 5)
     dy = random.randrange(-5, 5)

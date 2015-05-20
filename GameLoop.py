@@ -17,7 +17,8 @@ class GameLoop(object):
 		self.gameUpdate = gameUpdate
 		self.physics = PhysicsEngine(self.surface)
 		
-		self.gameTimer = GameTimer(surface,[self.keyboardInput.update, self.mouseInput.update, self.gameUpdate, self.physics])
+		self.gameTimer = GameTimer(surface,[self.keyboardInput.update, 
+			self.mouseInput.update, self.gameUpdate, self.physics.detection.updateStep, self.physics.resolution.update])
 
 	def addKeyPressListener(self, handler):
 		self.keyboardInput.addKeyPressListener(handler)
@@ -43,9 +44,6 @@ class GameLoop(object):
 	def add(self, obj):
 		self.surface.add(obj)
 		self.physics.addBody(obj)
-
-	def repaint(self):
-		self.surface.paint()
 
 	def run(self):
 		self.gameTimer.run()
